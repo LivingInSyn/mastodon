@@ -42,6 +42,10 @@ class Account::Field < ActiveModelSerializers::Model
 
     parsed_url = Addressable::URI.parse(value_for_verification)
 
+    if Addressable::URI.convert_path(parsed_url.path).path != parsed_url.path
+      false
+    end
+
     ACCEPTED_SCHEMES.include?(parsed_url.scheme) &&
       parsed_url.user.nil? &&
       parsed_url.password.nil? &&
