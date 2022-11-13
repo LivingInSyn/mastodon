@@ -39,18 +39,18 @@ class Account::Field < ActiveModelSerializers::Model
 
     # This is slower than checking through a regular expression, but we
     # need to confirm that it's not an IDN domain.
-
     parsed_url = Addressable::URI.parse(value_for_verification)
-
-    if Addressable::URI.convert_path(parsed_url.path).path != parsed_url.path
-      false
-    end
+    # The normalized path is checked below to weed out path traversal attempts,
+    # but a path for a URL without a trailing slash normalizes from "" to "/"
+    # so perform that particular normalization before proceeding with the checks.
+    parsed_url.path = "/" if parsed_url.path.empty?
 
     ACCEPTED_SCHEMES.include?(parsed_url.scheme) &&
       parsed_url.user.nil? &&
       parsed_url.password.nil? &&
       parsed_url.host.present? &&
-      parsed_url.normalized_host == parsed_url.host
+      parsed_url.normalized_host == parsed_url.host &&
+      parsed_url.normalized_path == parsed_url.path
   rescue Addressable::URI::InvalidURIError, IDN::Idna::IdnaError
     false
   end
