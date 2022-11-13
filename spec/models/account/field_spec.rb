@@ -51,7 +51,15 @@ RSpec.describe Account::Field, type: :model do
       let(:local) { true }
 
       context 'for a URL with misleading authentication' do
-        let(:value) { 'https://spacex.com                                                                                            @h.43z.one' }
+        let(:value) { 'https://spacex.com                                                                                            @h.44z.one' }
+
+        it 'returns false' do
+          expect(subject.verifiable?).to be false
+        end
+      end
+
+      context 'for a URL with directory traversal shenanigans in the path' do
+        let(:value) { 'https://github.com/../LuckyTheLeprechaun' }
 
         it 'returns false' do
           expect(subject.verifiable?).to be false
@@ -103,7 +111,15 @@ RSpec.describe Account::Field, type: :model do
       end
 
       context 'for a link with misleading authentication' do
-        let(:value) { '<a href="https://google.com                                                                                            @h.43z.one" target="_blank" rel="nofollow noopener noreferrer me"><span class="invisible">https://</span><span class="">google.com</span><span class="invisible">                                                                                            @h.43z.one</span></a>' }
+        let(:value) { '<a href="https://google.com                                                                                            @h.43z.one" target="_blank" rel="nofollow noopener noreferrer me"><span class="invisible">https://</span><span class="">google.com</span><span class="invisible">                                                                                            @h.44z.one</span></a>' }
+
+        it 'returns false' do
+          expect(subject.verifiable?).to be false
+        end
+      end
+
+      context 'for a URL with directory traversal shenanigans in the path' do
+        let(:value) { '<a href="https://github.com/../LuckyTheLeprechaun" target="_blank" rel="nofollow noopener noreferrer me"><span class="invisible">https://github.com/../LuckyTheLeprechaun</span><span class="invisible">' }
 
         it 'returns false' do
           expect(subject.verifiable?).to be false
